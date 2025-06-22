@@ -18,22 +18,23 @@ const router = createRouter({
         {
           //删除用户
           path: '/user/delete',
-          component: () => import('@/views/user/deleteuser.vue'),
+          component: () => import('@/views/user/UserDelete.vue'),
         },
         {
           //上传我的视频
           path: '/create_centre/upmyvideo',
-          component: () => import('@/views/user/myvideo/upmyvideo.vue'),
+          component: () => import('@/views/user/myvideo/MyVideoUpload.vue'),
         },
         {
           //删除我的视频
           path: '/create_centre/deletemyvideo',
-          component: () => import('@/views/user/myvideo/deletemyvideo.vue'),
+          component: () => import('@/views/user/myvideo/MyVideoDelete.vue'),
         },
         {
           //管理我的收藏夹
           path: '/user/favor_file',
-          component: () => import('@/views/user/favourite_file/edit.vue'),
+          component: () =>
+            import('@/views/user/favourite_file/FavouriteFileEdit.vue'),
         },
         {
           //我的关注

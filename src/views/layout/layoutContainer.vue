@@ -7,10 +7,9 @@ import {
   Crop,
   FolderOpened,
   Back,
-  Delete,
   Upload,
 } from '@element-plus/icons-vue'
-
+import { ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const handleClick = async () => {
