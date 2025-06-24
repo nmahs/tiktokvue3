@@ -64,8 +64,12 @@
         <el-table-column prop="description" label="视频描述"></el-table-column>
         <el-table-column label="操作" width="150">
           <template #default="{ row }">
-            <el-button size="small" type="danger" @click="deleteVideo(row.id)">
-              删除
+            <el-button
+              size="small"
+              type="danger"
+              @click="handleRemoveVideo(row.id)"
+            >
+              移除
             </el-button>
           </template>
         </el-table-column>
@@ -81,6 +85,7 @@ import {
   getFavoriteList,
   deleteFavorite,
   getFavoriteVideos,
+  removeVideoFromFavorite,
 } from '@/api/favourite_file'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -178,9 +183,29 @@ const showFavoriteVideos = async (favoriteId, favoriteName) => {
   }
 }
 
-// 删除视频功能占位
-const deleteVideo = videoId => {
-  ElMessage.info(`功能占位：删除视频ID ${videoId}`)
+// 从收藏夹中移除视频
+const handleRemoveVideo = videoId => {
+  if (!currentFavoriteId.value) return
+
+  ElMessageBox.confirm('确定要从当前收藏夹中移除这个视频吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(async () => {
+      try {
+        await removeVideoFromFavorite(currentFavoriteId.value, videoId)
+        // 从UI中移除视频
+        videoList.value = videoList.value.filter(video => video.id !== videoId)
+        ElMessage.success('视频已成功移除')
+      } catch (error) {
+        console.error('移除视频失败:', error)
+        ElMessage.error('移除视频失败，请稍后重试')
+      }
+    })
+    .catch(() => {
+      ElMessage.info('已取消操作')
+    })
 }
 
 // 页面加载时自动加载收藏夹

@@ -2,33 +2,35 @@
   <div>
     <h1 style="color: white">粉丝列表</h1>
     <ul class="scrollable-list">
-      <li v-for="user in focuslist" :key="user.id">{{ user.name }}</li>
+      <li v-for="user in fanslist" :key="user.id">{{ user.name }}</li>
     </ul>
+    <el-empty v-if="fanslist.length === 0" description="还没有粉丝哦" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import { getFollowerList } from '@/api/relation.js'
 
-export default {
-  data() {
-    return {
-      focuslist: [],
-    }
-  },
-  async created() {
-    this.focuslist = await getFollowerList()
-  },
-}
+defineOptions({
+  name: 'FollowerList',
+})
+
+const fanslist = ref([])
+
+onMounted(async () => {
+  fanslist.value = await getFollowerList()
+})
 </script>
 
 <style scoped>
 .scrollable-list {
-  max-height: 300px; /* 设置最大高度 */
-  overflow-y: auto; /* 启用垂直滚动 */
+  max-height: 300px;
+  overflow-y: auto;
   padding: 0;
   margin: 0;
   list-style: none;
+  color: white;
 }
 
 .scrollable-list li {

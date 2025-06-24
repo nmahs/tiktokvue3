@@ -12,9 +12,23 @@ const router = createRouter({
     {
       path: '/',
       component: () => import('@/views/layout/layoutContainer.vue'),
-      redirect: '/video/push',
+      redirect: '/videos',
       children: [
-        //用户的所有操作
+        {
+          path: '/videos',
+          name: 'VideoFeed',
+          component: () => import('@/views/video/videocard.vue'),
+        },
+        {
+          path: '/video/player/:id',
+          name: 'VideoPlayer',
+          component: () => import('@/views/video/VideoPlayer.vue'),
+        },
+        {
+          path: '/video/search',
+          name: 'SearchVideo',
+          component: () => import('@/views/video/search_video.vue'),
+        },
         {
           //删除用户
           path: '/user/delete',
@@ -29,6 +43,11 @@ const router = createRouter({
           //删除我的视频
           path: '/create_centre/deletemyvideo',
           component: () => import('@/views/user/myvideo/MyVideoDelete.vue'),
+        },
+        {
+          path: '/user/profile/:id',
+          name: 'UserProfile',
+          component: () => import('@/views/user/UserProfile.vue'),
         },
         {
           //管理我的收藏夹
@@ -51,25 +70,15 @@ const router = createRouter({
           path: '/focus/eachother',
           component: () => import('@/views/user/relation/focus_each.vue'),
         },
-        //视频的操作
-        {
-          //推荐的所有视频
-          path: '/video/push',
-          component: () => import('@/views/video/videocard.vue'),
-        },
-        //搜索视频
-        {
-          path: '/video/search',
-          component: () => import('@/views/video/search_video.vue'),
-        },
       ],
     },
   ],
 })
-/*
+
 router.beforeEach(to => {
-  const userStore = useUserStore()
-  if (!userStore.token && to.path !== '/login') return '/login'
+  // 暂时禁用认证检查，确保页面能正常显示
+  console.log('路由跳转到:', to.path)
+  return true
 })
-*/
+
 export default router

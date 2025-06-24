@@ -8,17 +8,38 @@ import {
   FolderOpened,
   Back,
   Upload,
+  Delete,
 } from '@element-plus/icons-vue'
-import { ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user.js'
+
+const userStore = useUserStore()
 const router = useRouter()
-const handleClick = async () => {
-  await ElMessageBox.confirm('确定退出登录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-  router.push('/login')
+
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm('确定退出登录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+
+    // 1. 清除 Pinia 中的用户数据和 token
+    userStore.clearUserInfo()
+
+    // 2. 直接跳转到登录页面
+    router.push('/login')
+
+    // 3. 显示成功消息
+    ElMessage.success('已成功退出登录')
+  } catch (error) {
+    if (error === 'cancel') {
+      ElMessage.info('已取消退出登录')
+    } else {
+      console.error('退出登录时发生错误:', error)
+      ElMessage.error('退出登录失败')
+    }
+  }
 }
 </script>
 
@@ -33,7 +54,7 @@ const handleClick = async () => {
         text-color="#fff"
         router
       >
-        <el-menu-item index="/video/push">
+        <el-menu-item index="/videos">
           <el-icon><VideoCamera /></el-icon>
           <span>观看视频</span>
         </el-menu-item>
@@ -42,6 +63,14 @@ const handleClick = async () => {
             <el-icon><UserFilled /></el-icon>
             <span>个人中心</span>
           </template>
+
+          <el-menu-item
+            v-if="userStore.userInfo?.id"
+            :index="`/user/profile/${userStore.userInfo.id}`"
+          >
+            <el-icon><User /></el-icon>
+            <span>我的主页</span>
+          </el-menu-item>
 
           <el-sub-menu index="/focus">
             <template #title>
@@ -69,7 +98,7 @@ const handleClick = async () => {
             <el-icon><FolderOpened /></el-icon>
             <span>我的收藏夹</span>
           </el-menu-item>
-          <el-sub-menu index="/create_center">
+          <el-sub-menu index="/create_centre">
             <template #title>
               <el-icon><Crop /></el-icon>
               <span>创作中心</span>
@@ -88,7 +117,7 @@ const handleClick = async () => {
     </el-aside>
     <el-container>
       <el-header class="el-header">
-        <el-button type="warning" @click="handleClick" class="right">
+        <el-button type="warning" class="right" @click="handleLogout">
           <el-icon><Back /></el-icon>
           <span>退出登录</span>
         </el-button>

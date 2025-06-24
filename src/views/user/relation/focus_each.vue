@@ -1,25 +1,30 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div>
     <h1 style="color: white">互关列表</h1>
     <ul class="scrollable-list">
-      <li v-for="user in focuslist" :key="user.id">{{ user.name }}</li>
+      <li v-for="user in friendlist" :key="user.id">{{ user.name }}</li>
     </ul>
+    <el-empty
+      v-if="friendlist.length === 0"
+      description="还没有互相关注的朋友哦"
+    />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import { getMutualFriends } from '@/api/relation.js'
 
-export default {
-  data() {
-    return {
-      focuslist: [],
-    }
-  },
-  async created() {
-    this.focuslist = await getMutualFriends()
-  },
-}
+defineOptions({
+  name: 'FriendList',
+})
+
+const friendlist = ref([])
+
+onMounted(async () => {
+  friendlist.value = await getMutualFriends()
+})
 </script>
 
 <style scoped>
@@ -29,6 +34,7 @@ export default {
   padding: 0;
   margin: 0;
   list-style: none;
+  color: white;
 }
 
 .scrollable-list li {

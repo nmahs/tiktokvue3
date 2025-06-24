@@ -1,4 +1,5 @@
 import { request } from '@/until/request'
+import { ElMessage } from 'element-plus'
 
 // 获取互关列表函数
 export async function getMutualFriends(pageNum = 1, pageSize = 5) {
@@ -107,5 +108,37 @@ export async function searchVideos(params) {
   } catch (error) {
     console.error('搜索视频失败:', error)
     throw error // 抛出错误以便调用方处理
+  }
+}
+
+/**
+ * 点赞/取消点赞视频
+ * @param {string} videoId - 视频ID
+ * @param {boolean} isLiked - 当前是否已点赞 (true: 已点赞 -> 要取消点赞, false: 未点赞 -> 要点赞)
+ * @returns {Promise}
+ */
+export const toggleLike = async (videoId, isLiked) => {
+  try {
+    const actionType = isLiked ? 2 : 1 // 1-点赞, 2-取消点赞
+    console.log(`Toggling like for video ${videoId}, action: ${actionType}`)
+
+    // 模拟API调用
+    // 在真实场景中，后端会处理点赞状态，前端只需告知操作即可
+    return Promise.resolve({
+      message: actionType === 1 ? '点赞成功' : '取消点赞成功',
+    })
+
+    // 真实的API请求
+    /*
+    const response = await request.post('/v1/favorite/action/', {
+      video_id: videoId,
+      action_type: actionType
+    })
+    return response.data
+    */
+  } catch (error) {
+    ElMessage.error('操作失败，请稍后重试')
+    console.error('Failed to toggle like:', error)
+    throw error
   }
 }

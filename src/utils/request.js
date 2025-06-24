@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useUserStore } from '@/stores/user.js'
 import { ElMessage } from 'element-plus'
+import router from '@/router'
 
 // 配置常量
 const CONFIG = {
@@ -42,7 +43,7 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   response => {
     // 计算请求耗时
-    const endTime = new Date()
+    const endTime = Date.now()
     const startTime = response.config.metadata?.startTime
     const duration = startTime ? endTime - startTime : 0
 
@@ -50,7 +51,14 @@ instance.interceptors.response.use(
 
     // 检查响应状态
     if (response.status === 200) {
-      return response
+      // 处理业务成功响应
+      if (response.data && response.data.status_code === 0) {
+        return response
+      }
+
+      // 处理业务错误
+      ElMessage.error(response.data?.status_msg || '请求失败')
+      return Promise.reject(new Error(response.data?.status_msg || '请求失败'))
     }
 
     // 处理非200状态码
@@ -58,34 +66,47 @@ instance.interceptors.response.use(
     return Promise.reject(new Error(`HTTP ${response.status}`))
   },
   error => {
-    // 处理网络错误
-    if (error.code === 'ECONNABORTED') {
-      ElMessage.error('请求超时，请检查网络连接')
-    } else if (error.response) {
-      // 服务器返回错误状态码
-      const { status } = error.response
-      switch (status) {
-        case 401:
-          ElMessage.error('未授权，请重新登录')
-          // 可以在这里清除token并跳转到登录页
-          break
-        case 403:
-          ElMessage.error('权限不足')
-          break
-        case 404:
-          ElMessage.error('请求的资源不存在')
-          break
-        case 500:
-          ElMessage.error('服务器内部错误')
-          break
-        default:
-          ElMessage.error(`请求失败: ${status}`)
-      }
-    } else {
-      ElMessage.error('网络错误，请检查网络连接')
+    const endTime = Date.now()
+    console.log(`请求耗时: ${endTime - (error.config?.startTime || endTime)}ms`)
+
+    // 处理401未授权错误
+    if (error.response?.status === 401) {
+      const userStore = useUserStore()
+
+      // 清除用户信息
+      userStore.clearUserInfo()
+
+      // 显示提示信息
+      ElMessage.error('登录已过期，请重新登录')
+
+      // 跳转到登录页
+      router.push('/login')
+
+      return Promise.reject(error)
     }
 
-    console.error('响应拦截器错误:', error)
+    // 处理其他HTTP错误
+    const status = error.response?.status
+    let message = '网络错误'
+
+    switch (status) {
+      case 400:
+        message = '请求参数错误'
+        break
+      case 403:
+        message = '没有权限访问'
+        break
+      case 404:
+        message = '请求的资源不存在'
+        break
+      case 500:
+        message = '服务器内部错误'
+        break
+      default:
+        message = error.message || '网络连接失败'
+    }
+
+    ElMessage.error(message)
     return Promise.reject(error)
   },
 )

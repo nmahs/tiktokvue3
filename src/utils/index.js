@@ -228,3 +228,91 @@ export async function copyToClipboard(text) {
     return false
   }
 }
+
+export const generateMockVideoList = (count = 10) => {
+  const list = []
+  for (let i = 0; i < count; i++) {
+    const randomWidth = 400 + Math.floor(Math.random() * 100)
+    const randomHeight = 225 + Math.floor(Math.random() * 50)
+    list.push({
+      id: generateUUID(),
+      author: {
+        avatar: 'https://via.placeholder.com/48',
+        is_follow: Math.random() > 0.5,
+      },
+      url: 'http://vjs.zencdn.net/v/oceans.mp4', // Placeholder video URL
+      cover_url: `https://picsum.photos/${randomWidth}/${randomHeight}?random=${i}`,
+      title: `这是一个很长很长很长很长的视频标题用来测试省略号是否正常工作 ${
+        i + 1
+      }`,
+      favorite_count: Math.floor(Math.random() * 1000),
+      comment_count: Math.floor(Math.random() * 500),
+      is_favorite: Math.random() > 0.5,
+      publish_date: new Date(
+        Date.now() - Math.random() * 1000 * 3600 * 24 * 30,
+      ).toISOString(),
+      duration: `${Math.floor(Math.random() * 60)}:${Math.floor(
+        Math.random() * 60,
+      )
+        .toString()
+        .padStart(2, '0')}`,
+    })
+  }
+  return list
+}
+
+// Create a static list of mock videos to ensure data consistency across API calls
+const mockVideoData = generateMockVideoList(50)
+
+export const getMockFeed = (count = 10) => {
+  // In a real scenario, latest_time would be used for pagination.
+  // Here we just return a slice of the mock data.
+  // This is a simplified example.
+  const startIndex = Math.floor(Math.random() * (mockVideoData.length - count))
+  return mockVideoData.slice(startIndex, startIndex + count)
+}
+
+export const getMockVideoById = id => {
+  return mockVideoData.find(video => video.id === id) || null
+}
+
+let mockComments = []
+
+export const generateMockComments = (videoId, count = 10) => {
+  const comments = []
+  for (let i = 0; i < count; i++) {
+    comments.push({
+      id: generateUUID(),
+      user: {
+        id: `user_${i}`,
+        nickname: `路人甲${i}`,
+        avatar: `https://i.pravatar.cc/40?u=user${i}`,
+      },
+      content: '这是一个非常棒的评论！'.repeat(Math.ceil(Math.random() * 3)),
+      create_date: new Date(
+        Date.now() - Math.random() * 1000 * 3600 * 24 * 5,
+      ).toLocaleDateString(),
+    })
+  }
+  mockComments = comments
+  return comments
+}
+
+export const addMockComment = (videoId, content) => {
+  const newComment = {
+    id: generateUUID(),
+    user: {
+      id: 'user_current',
+      nickname: '我',
+      avatar: `https://i.pravatar.cc/40?u=user_current`,
+    },
+    content: content,
+    create_date: new Date().toLocaleDateString(),
+  }
+  mockComments.unshift(newComment)
+  return newComment
+}
+
+export const removeMockComment = commentId => {
+  mockComments = mockComments.filter(comment => comment.id !== commentId)
+}

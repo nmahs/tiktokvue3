@@ -1,0 +1,40 @@
+# 项目待办事项 (TODO List)
+
+## 功能缺失
+
+1.  **实现 "添加视频到收藏夹" 功能**
+    -   **现状**: `src/api/favourite_file.js` 中只有从收藏夹移除视频的API，没有添加视频的API。
+    -   **任务**:
+        -   在 `favourite_file.js` 中新增一个 `addVideoToFavorite` 的模拟API函数。
+        -   在视频播放页 (`VideoPlayer.vue`) 的收藏按钮逻辑中，调用此API，并允许用户选择要存入哪个收藏夹。
+
+2.  **实现 "用户注销（删除账户）" 功能**
+    -   **现状**: 路由 `/user/delete` 指向的 `src/views/user/UserDelete.vue` 是一个空白的占位符页面。
+    -   **任务**:
+        -   在 `src/api/user.js` 中添加一个 `deleteUser` 的模拟API。
+        -   将 `UserDelete.vue` 实现为一个功能完整的页面，包括输入密码确认、风险提示和最终的删除按钮。
+        -   在 `layoutContainer.vue` 的侧边栏中添加入口链接。
+
+## 代码/项目结构优化
+
+3.  **重构API模块的职责**
+    -   **现状**: `src/api/relation.js` 中包含了与用户关系无关的 `searchVideos` (视频搜索) 和 `addVideoToFavorite` (添加到收藏夹) 函数。
+    -   **任务**:
+        -   将 `addVideoToFavorite` 函数从 `relation.js` 移动到 `favourite_file.js`。
+        -   将 `searchVideos` 函数从 `relation.js` 移动到 `video.js`。
+        -   更新调用这些函数的文件 (`search_video.vue` 等)，确保导入路径正确。
+
+## 体验/功能增强 (可选)
+
+4.  **创建 "用户设置" 页面**
+    -   **需求**: 用户应能修改自己的个人信息。
+    -   **任务**:
+        -   创建一个新的 `UserSettings.vue` 页面。
+        -   提供表单用于修改用户昵称、个人简介和密码。
+        -   在 `src/api/user.js` 中添加对应的 `updateUserProfile` 和 `updatePassword` 模拟API。
+        -   在侧边栏"个人中心"下添加入口。
+
+5.  **优化 "视频搜索结果页" 的交互**
+    -   **现状**: 在 `search_video.vue` 页面点击搜索结果是打开新标签页播放视频。
+    -   **任务**:
+        -   将交互改为点击后跳转到站内统一的视频播放页 (`/video/player/:id`)，以获得更好的用户体验。

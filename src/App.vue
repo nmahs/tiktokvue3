@@ -2,8 +2,7 @@
 <script setup></script>
 
 <template>
-  <div>
-    <hr />
+  <div id="app">
     <router-view></router-view>
   </div>
 </template>
@@ -13,6 +12,10 @@
   margin: 0px;
   padding: 0px;
   box-sizing: border-box;
-  overflow: hidden;
+}
+
+#app {
+  height: 100vh;
+  width: 100vw;
 }
 </style>

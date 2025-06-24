@@ -8,6 +8,33 @@ const instance = axios.create({
   baseURL,
   timeout: 10000,
 })
+
+// 模拟数据
+const mockResponses = {
+  '/v1/user/login': {
+    data: {
+      token: 'mock_token_' + Date.now(),
+      user_id: 1,
+      message: '登录成功',
+    },
+  },
+  '/v1/user/create': {
+    data: {
+      message: '注册成功',
+    },
+  },
+  '/v1/user/sendcode': {
+    data: {
+      message: '验证码已发送',
+    },
+  },
+  '/v1/user/verifycode': {
+    data: {
+      message: '验证码正确',
+    },
+  },
+}
+
 //请求拦截器
 instance.interceptors.request.use(
   config => {
@@ -31,6 +58,13 @@ instance.interceptors.response.use(
     return Promise.reject(res.status)
   },
   err => {
+    // 如果是网络错误，返回模拟数据
+    if (err.code === 'ERR_NETWORK' || err.code === 'ECONNREFUSED') {
+      const mockResponse = mockResponses[err.config.url]
+      if (mockResponse) {
+        return Promise.resolve(mockResponse)
+      }
+    }
     ElMessage.error('服务异常')
     return Promise.reject(err)
   },

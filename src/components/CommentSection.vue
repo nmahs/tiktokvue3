@@ -1,168 +1,189 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="comment-section" @scroll="handleScroll">
-    <!-- 评论列表 -->
-    <div class="comments-list">
-      <div v-for="comment in comments" :key="comment.id" class="comment">
-        <p>
-          <strong>{{ comment.author }}</strong
-          >: {{ comment.text }}
-        </p>
-      </div>
-    </div>
-
-    <!-- 加载更多提示 -->
-    <div v-if="loading" class="loading">加载中...</div>
-
-    <!-- 输入框和提交按钮 -->
-    <div class="comment-input">
+  <div class="comment-section">
+    <div class="comment-input-area">
       <el-input
-        v-model="newCommentText"
-        type="text"
-        placeholder="请输入评论..."
-        @keyup.enter="addComment"
-        :disabled="loading"
-        class="input-box"
+        v-model="newComment"
+        type="textarea"
+        :rows="3"
+        placeholder="留下你的精彩评论吧"
+        class="comment-textarea"
+        @keyup.enter="submitComment"
       />
       <el-button
-        @click="addComment"
-        :disabled="loading || !newCommentText.trim()"
-        class="input-button"
+        type="primary"
+        class="submit-button"
+        :disabled="!newComment.trim()"
+        @click="submitComment"
       >
-        提交
+        发表评论
       </el-button>
+    </div>
+
+    <ul ref="commentListEl" class="comment-list">
+      <li v-if="comments.length === 0 && !loading" class="no-comments">
+        还没有评论，快来抢沙发吧！
+      </li>
+      <li v-for="comment in comments" :key="comment.id" class="comment-item">
+        <el-avatar :src="comment.user.avatar" class="comment-avatar" />
+        <div class="comment-content">
+          <span class="comment-user">{{ comment.user.nickname }}</span>
+          <p class="comment-text">{{ comment.content }}</p>
+          <span class="comment-date">{{ comment.create_date }}</span>
+        </div>
+        <el-button
+          v-if="comment.showDelete"
+          type="danger"
+          :icon="Delete"
+          circle
+          plain
+          class="delete-btn"
+          @click.stop="handleDelete(comment.id)"
+        />
+      </li>
+    </ul>
+
+    <div class="comment-footer">
+      <el-button
+        v-if="hasMore"
+        :loading="loading"
+        type="primary"
+        plain
+        @click="loadMore"
+      >
+        {{ loading ? '加载中...' : '加载更多' }}
+      </el-button>
+      <p v-if="!hasMore && comments.length > 0" class="no-more-comments">
+        没有更多评论了
+      </p>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'CommentSection',
-  props: {
-    comments: {
-      type: Array,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      loading: false,
-      newCommentText: '', // 新评论的文本
-      page: 1,
-      totalPages: 5, // 假设总页数为5
-    }
-  },
-  methods: {
-    // 滚动到底部加载更多评论
-    handleScroll(event) {
-      const bottom =
-        event.target.scrollHeight ===
-        event.target.scrollTop + event.target.clientHeight
-      if (bottom && !this.loading && this.page < this.totalPages) {
-        this.loadMoreComments()
-      }
-    },
+<script setup>
+import { ref, defineEmits } from 'vue'
+import { Delete } from '@element-plus/icons-vue'
 
-    // 加载更多评论
-    loadMoreComments() {
-      this.loading = true
-      setTimeout(() => {
-        // 通过事件将新的评论传递给父组件
+const emit = defineEmits([
+  'add-comment',
+  'load-more-comments',
+  'delete-comment',
+])
 
-        this.page += 1
-        this.loading = false
-      }, 1000)
-    },
+const newComment = ref('')
 
-    // 添加新评论
-    addComment() {
-      if (this.newCommentText.trim()) {
-        const newComment = {
-          id: Date.now(), // 使用 `Date.now()` 来确保评论 ID 唯一
-          author: '匿名',
-          text: this.newCommentText.trim(),
-        }
+const submitComment = () => {
+  if (newComment.value.trim()) {
+    emit('add-comment', newComment.value)
+    newComment.value = ''
+  }
+}
 
-        // 触发事件，将新的评论传递给父组件
-        this.$emit('add-comment', newComment)
+const loadMore = () => {
+  emit('load-more-comments')
+}
 
-        this.newCommentText = '' // 清空输入框
-      }
-    },
-  },
+const handleDelete = commentId => {
+  emit('delete-comment', commentId)
 }
 </script>
 
 <style scoped>
 .comment-section {
-  height: 540px; /* 评论区高度 */
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  padding: 10px;
-}
-
-.comments-list {
-  padding-bottom: 10px;
-}
-
-.comment {
-  margin-bottom: 10px;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 10px;
-}
-
-.loading {
-  text-align: center;
-  color: #888;
-  padding: 10px;
-}
-
-/* 输入框区域样式 */
-.comment-input {
+  padding: 20px;
+  background-color: #333;
+  color: white;
+  border-radius: 8px;
+  max-height: 400px; /* or as needed */
   display: flex;
-  margin-top: 10px;
-  gap: 10px;
-  height: 30px;
-  width: 200px;
+  flex-direction: column;
 }
 
-.comment-input input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.comment-input-area {
+  display: flex;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.comment-textarea {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.comment-textarea .el-textarea__inner {
+  background-color: #444;
+  color: white;
+  border-color: #555;
+}
+
+.submit-button {
+  flex-shrink: 0;
+}
+
+.comment-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.comment-item {
+  display: flex;
+  padding: 12px 0;
+  border-bottom: 1px solid #444;
+  position: relative;
+}
+
+.comment-avatar {
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.comment-content {
+  flex-grow: 1;
+}
+
+.comment-user {
+  font-weight: bold;
+  font-size: 14px;
+  color: #eee;
+}
+
+.comment-text {
+  margin: 4px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ddd;
+  white-space: pre-wrap; /* Preserve line breaks */
+}
+
+.comment-date {
+  font-size: 12px;
+  color: #888;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 12px;
+  right: 5px;
+  opacity: 0.8;
+}
+
+.comment-footer {
+  text-align: center;
+  margin-top: 20px;
+  flex-shrink: 0;
+}
+
+.no-more-comments {
+  color: #888;
   font-size: 14px;
 }
 
-.comment-input button {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.comment-input button:disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
-}
-
-.input-box {
-  flex: 1;
-}
-
-.input-button {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.input-button:disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
+.no-comments {
+  color: #888;
+  text-align: center;
+  padding: 20px 0;
 }
 </style>

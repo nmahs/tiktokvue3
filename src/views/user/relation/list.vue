@@ -5,22 +5,24 @@
     <ul class="scrollable-list">
       <li v-for="user in focuslist" :key="user.id">{{ user.name }}</li>
     </ul>
+    <el-empty v-if="focuslist.length === 0" description="还没有关注任何人哦" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import { getFollowingList } from '@/api/relation.js'
 
-export default {
-  data() {
-    return {
-      focuslist: [],
-    }
-  },
-  async created() {
-    this.focuslist = await getFollowingList()
-  },
-}
+defineOptions({
+  name: 'FollowingList',
+})
+
+const focuslist = ref([])
+
+onMounted(async () => {
+  // Mock API returns the data directly
+  focuslist.value = await getFollowingList()
+})
 </script>
 
 <style scoped>
@@ -30,6 +32,7 @@ export default {
   padding: 0;
   margin: 0;
   list-style: none;
+  color: white; /* 确保文字可见 */
 }
 
 .scrollable-list li {
